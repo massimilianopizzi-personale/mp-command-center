@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MP-Brain" />
+  <title>MP-Brain · Command Center</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base: #070B14;
+      --bg-surface: rgba(15, 23, 42, 0.82);
+      --bg-card: rgba(20, 30, 53, 0.76);
+      --bg-card-hover: rgba(28, 41, 71, 0.92);
+      --bg-elevated: #131D35;
+      --border: rgba(148, 163, 184, 0.13);
+      --border-strong: rgba(99, 102, 241, 0.38);
+      --text-primary: #F8FAFC;
+      --text-secondary: #CBD5E1;
+      --text-muted: #64748B;
+      --accent: #3B82F6;
+      --accent-glow: rgba(59, 130, 246, 0.25);
+      --violet: #8B5CF6;
+      --emerald: #10B981;
+      --emerald-bg: rgba(16, 185, 129, 0.14);
+      --amber: #F59E0B;
+      --amber-bg: rgba(245, 158, 11, 0.16);
+      --rose: #F43F5E;
+      --rose-bg: rgba(244, 63, 94, 0.16);
+      --cyan: #06B6D4;
+      --cyan-bg: rgba(6, 182, 212, 0.14);
+      --shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.55);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #F1F5F9;
+      --bg-surface: rgba(255, 255, 255, 0.9);
+      --bg-card: rgba(255, 255, 255, 0.96);
+      --bg-card-hover: #FFFFFF;
+      --bg-elevated: #FFFFFF;
+      --border: rgba(15, 23, 42, 0.09);
+      --border-strong: rgba(59, 130, 246, 0.35);
+      --text-primary: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
+      --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.13) 0px, transparent 48%),
+        radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 48%),
+        radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.07) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Top Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+      color: #FFF;
+      letter-spacing: -0.5px;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      cursor: pointer;
+    }
+
+    .sync-pill.cloud {
+      background: rgba(59, 130, 246, 0.14);
+      color: #60A5FA;
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    [data-theme="light"] .sync-pill.cloud {
+      color: #2563EB;
+    }
+
+    .sync-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.9); }
+    }
+
+    .topbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-box input {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 7px 12px 7px 32px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      width: 210px;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+      width: 260px;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+      border-color: transparent;
+      color: #FFF;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      border-color: transparent;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1640px;
+      margin: 0 auto;
+      padding: 20px 24px 64px;
+    }
+
+    /* KPI Strip */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--accent);
+    }
+
+    .kpi-card.urgent::before { background: var(--amber); }
+    .kpi-card.agenda::before { background: var(--cyan); }
+    .kpi-card.calls::before { background: var(--violet); }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .kpi-value {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .kpi-sub {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .kpi-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      background: rgba(59, 130, 246, 0.12);
+      flex-shrink: 0;
+    }
+
+    /* Quick Add Panel */
+    .quick-add {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+
+    .quick-add.open {
+      display: block;
+      animation: fadeIn 0.18s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .quick-add-row {
+      display: grid;
+      grid-template-columns: 1fr 160px 160px auto;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .quick-add-row { grid-template-columns: 1fr; }
+    }
+
+    .input-field {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    /* Workspace Layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 1180px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count-chip {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.14);
+      color: var(--text-secondary);
+    }
+
+    /* Task Cards */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      transition: all 0.18s ease;
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    .task-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
+    }
+
+    .task-card.urgent-tomorrow,
+    .task-card.urgent-today {
+      border-left: 3px solid var(--amber);
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-card) 35%);
+    }
+
+    .task-card.urgent-overdue {
+      border-left: 3px solid var(--rose);
+      background: linear-gradient(90deg, rgba(244, 63, 94, 0.1) 0%, var(--bg-card) 35%);
+    }
+
+    .task-card.completed {
+      opacity: 0.62;
+    }
+
+    .task-card.completed .task-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .checkbox-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      color: transparent;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .checkbox-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    .checkbox-btn.checked {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #FFF;
+    }
+
+    .task-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 5px;
+    }
+
+    .task-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .deadline-pill {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .deadline-pill.today,
+    .deadline-pill.tomorrow {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .deadline-pill.overdue {
+      background: var(--rose-bg);
+      color: var(--rose);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+
+    .deadline-pill.soon,
+    .deadline-pill.future {
+      background: var(--cyan-bg);
+      color: var(--cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .task-details {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-top: 4px;
+      word-break: break-word;
+    }
+
+    .task-details code,
+    .guideline-body code,
+    .drawer-content code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.14);
+      color: #93C5FD;
+    }
+
+    [data-theme="light"] .task-details code,
+    [data-theme="light"] .guideline-body code,
+    [data-theme="light"] .drawer-content code {
+      background: rgba(37, 99, 235, 0.1);
+      color: #1D4ED8;
+    }
+
+    .task-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 9px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .source-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(139, 92, 246, 0.14);
+      color: #C4B5FD;
+      border: 1px solid rgba(139, 92, 246, 0.28);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    [data-theme="light"] .source-chip {
+      color: #6D28D9;
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .source-chip:hover {
+      background: rgba(139, 92, 246, 0.26);
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.35;
+      transition: opacity 0.15s, color 0.15s;
+    }
+
+    .task-card:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .delete-btn:hover {
+      color: var(--rose);
+    }
+
+    /* Right Column Tabs */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-card);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+      color: #FFF;
+    }
+
+    .guideline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .guideline-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #93C5FD;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    [data-theme="light"] .guideline-title {
+      color: #1D4ED8;
+    }
+
+    .guideline-body ul {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .guideline-body ul ul {
+      margin-top: 5px;
+    }
+
+    .log-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.16s;
+    }
+
+    .log-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
+      transform: translateX(2px);
+    }
+
+    .log-date {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .log-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 4px 0 8px;
+    }
+
+    .tag-chip {
+      font-size: 10.5px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--text-secondary);
+    }
+
+    /* Slide-over Drawer */
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.68);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      display: none;
+    }
+
+    .drawer-backdrop.open {
+      display: block;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(760px, 95vw);
+      background: var(--bg-elevated);
+      border-left: 1px solid var(--border-strong);
+      z-index: 100;
+      padding: 22px 24px;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: -16px 0 48px rgba(0, 0, 0, 0.65);
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-content h1 {
+      font-size: 19px;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .drawer-content h2 {
+      font-size: 15px;
+      color: #93C5FD;
+      margin: 18px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    [data-theme="light"] .drawer-content h2 {
+      color: #1D4ED8;
+    }
+
+    .drawer-content p,
+    .drawer-content li {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .drawer-content ul,
+    .drawer-content ol {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    /* Mobile Bottom Tab Bar */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 60;
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .mobile-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .mobile-nav-btn .ico {
+      font-size: 17px;
+    }
+
+    .mobile-nav-btn.active {
+      color: #FFF;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(124, 58, 237, 0.85) 100%);
+    }
+
+    /* Mobile Responsive Tuning */
+    @media (max-width: 780px) {
+      .topbar {
+        padding: 10px 14px;
+      }
+      .brand-sub {
+        display: none;
+      }
+      .search-box {
+        width: 100%;
+        order: 3;
+      }
+      .search-box input,
+      .search-box input:focus {
+        width: 100%;
+      }
+      .container {
+        padding: 14px 12px 92px;
+      }
+      .kpi-strip {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .kpi-card {
+        padding: 11px 13px;
+      }
+      .kpi-value {
+        font-size: 21px;
+      }
+      .kpi-badge {
+        width: 32px;
+        height: 32px;
+        font-size: 15px;
+      }
+      .panel {
+        padding: 14px;
+      }
+      .mobile-nav {
+        display: grid;
+      }
+      .desktop-only {
+        display: none !important;
+      }
+    }
+
+    /* Auth Lock Screen for unconfigured Mobile */
+    .auth-card {
+      max-width: 500px;
+      margin: 48px auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 76px;
+      right: 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+      z-index: 200;
+      display: none;
+    }
+
+    .toast.show {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: fadeIn 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">MP</div>
+      <div>
+        <div class="brand-title">
+          <span>MP-Brain</span>
+          <span class="sync-pill" id="syncPill" onclick="manualSync()" title="Clicca per sincronizzare ora">
+            <span class="sync-dot"></span>
+            <span id="syncText">Sync...</span>
+          </span>
+          <span class="sync-pill cloud" id="cloudPill" onclick="manualCloudSync()" title="Stato sincronizzazione GitHub Cloud">
+            <span>☁️</span>
+            <span id="cloudText">GitHub</span>
+          </span>
+        </div>
+        <div class="brand-sub" id="clockDisplay">Caricamento...</div>
+      </div>
+    </div>
+
+    <div class="topbar-controls">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Filtra attività, persone, BU... (/)" />
+      </div>
+      <button class="btn btn-primary" onclick="toggleQuickAdd()">＋ Nuova</button>
+      <button class="btn" id="btnMobileSetup" onclick="openMobileModal()" title="Collega Smartphone">📱 Smartphone</button>
+      <button class="btn desktop-only" onclick="openRawEditor()">📝 Markdown</button>
+      <button class="btn" onclick="toggleTheme()" id="themeBtn" title="Cambia tema">🌗</button>
+    </div>
+  </header>
+
+  <!-- Setup Box shown ONLY on Smartphone if Token is not configured yet -->
+  <div id="mobileAuthScreen" style="display:none; padding: 0 14px;">
+    <div class="auth-card">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <div class="brand-logo">MP</div>
+        <div>
+          <h2 style="font-size:17px;">Collega MP-Brain Smartphone</h2>
+          <p style="font-size:12px; color:var(--text-muted);">Sincronizzazione diretta con il tuo GitHub privato</p>
+        </div>
+      </div>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+        Incolla qui il <strong>Link Magico</strong> o il <strong>Token GitHub</strong> copiato dal pulsante <code>📱 Smartphone</code> del tuo PC. Rimarrà salvato esclusivamente nella memoria locale di questo telefono.
+      </p>
+      <form onsubmit="saveMobileToken(event)">
+        <input type="password" id="ghTokenInput" class="input-field" style="width:100%; margin-bottom:10px;" placeholder="Incolla Link Magico o Token (gho_... / ghp_...)" required />
+        <input type="text" id="ghRepoInput" class="input-field" style="width:100%; margin-bottom:14px;" value="massimilianopizzi-personale/mp-brain" />
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:11px;">🔗 Connetti a mp-brain</button>
+      </form>
+    </div>
+  </div>
+
+  <main class="container" id="mainContainer">
+    <!-- KPI Strip -->
+    <section class="kpi-strip">
+      <div class="kpi-card urgent">
+        <div>
+          <div class="kpi-label">In Scadenza (Oggi/Domani)</div>
+          <div class="kpi-value" id="kpiUrgent">0</div>
+          <div class="kpi-sub" id="kpiUrgentSub">Nessuna urgenza immediata</div>
+        </div>
+        <div class="kpi-badge">🔥</div>
+      </div>
+
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-label">Azioni Immediate Aperte</div>
+          <div class="kpi-value" id="kpiOpen">0</div>
+          <div class="kpi-sub">Da fare / presidiare</div>
+        </div>
+        <div class="kpi-badge">⚡</div>
+      </div>
+
+      <div class="kpi-card agenda">
+        <div>
+          <div class="kpi-label">In Agenda & Scadenze</div>
+          <div class="kpi-value" id="kpiAgenda">0</div>
+          <div class="kpi-sub">Appuntamenti e milestone</div>
+        </div>
+        <div class="kpi-badge">🗓️</div>
+      </div>
+
+      <div class="kpi-card calls">
+        <div>
+          <div class="kpi-label">Verbali Call (90-log)</div>
+          <div class="kpi-value" id="kpiLogs">0</div>
+          <div class="kpi-sub" id="kpiCompletedSub">0 completate di recente</div>
+        </div>
+        <div class="kpi-badge">📞</div>
+      </div>
+    </section>
+
+    <!-- Quick Add -->
+    <section class="quick-add" id="quickAddPanel">
+      <form onsubmit="submitNewTask(event)">
+        <div class="quick-add-row">
+          <input type="text" id="newTitle" class="input-field" placeholder="Titolo attività o promemoria (es. Chiamare Marco Ferrazzi)..." required />
+          <select id="newSection" class="input-field">
+            <option value="immediate">🔥 Da fare subito</option>
+            <option value="agenda">🗓️ In agenda futura</option>
+          </select>
+          <input type="date" id="newDeadline" class="input-field" title="Scadenza opzionale" />
+          <button type="submit" class="btn btn-primary">Salva in mp-brain</button>
+        </div>
+        <input type="text" id="newDetails" class="input-field" style="width:100%;" placeholder="Dettagli o note aggiuntive (opzionale)..." />
+      </form>
+    </section>
+
+    <!-- Main 2-Column Workspace -->
+    <div class="workspace">
+      <!-- Left Column: Actionable Tasks -->
+      <div id="colLeft">
+        <section class="panel" id="panelImmediate">
+          <div class="panel-header">
+            <div class="panel-title">
+              🔥 Da fare / Azioni immediate
+              <span class="count-chip" id="countImmediate">0</span>
+            </div>
+          </div>
+          <div class="task-list" id="listImmediate"></div>
+        </section>
+
+        <section class="panel" id="panelAgenda">
+          <div class="panel-header">
+            <div class="panel-title">
+              🗓️ Agenda e scadenze future
+              <span class="count-chip" id="countAgenda">0</span>
+            </div>
+          </div>
+          <div class="task-list" id="listAgenda"></div>
+        </section>
+
+        <section class="panel" id="panelCompleted">
+          <div class="panel-header">
+            <div class="panel-title">
+              ✅ Completate di recente
+              <span class="count-chip" id="countCompleted">0</span>
+            </div>
+          </div>
+          <div class="task-list" id="listCompleted"></div>
+        </section>
+      </div>
+
+      <!-- Right Column: Guidelines & Call Logs -->
+      <div id="colRight">
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title" id="rightPanelTitle">🧭 Allineamenti e linee guida da presidiare</div>
+            <div class="tabs">
+              <button class="tab-btn active" id="tabBtnGuidelines" onclick="switchRightTab('guidelines')">🧭 Linee Guida</button>
+              <button class="tab-btn" id="tabBtnLogs" onclick="switchRightTab('logs')">📞 Verbali Call</button>
+            </div>
+          </div>
+
+          <div id="viewGuidelines"></div>
+          <div id="viewLogs" style="display:none;"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation Bar for Smartphone -->
+  <nav class="mobile-nav">
+    <button class="mobile-nav-btn active" id="mTabImmediate" onclick="switchMobileView('immediate')">
+      <span class="ico">🔥</span>
+      <span>Da fare</span>
+    </button>
+    <button class="mobile-nav-btn" id="mTabAgenda" onclick="switchMobileView('agenda')">
+      <span class="ico">🗓️</span>
+      <span>Agenda</span>
+    </button>
+    <button class="mobile-nav-btn" id="mTabGuidelines" onclick="switchMobileView('guidelines')">
+      <span class="ico">🧭</span>
+      <span>Linee Guida</span>
+    </button>
+    <button class="mobile-nav-btn" id="mTabLogs" onclick="switchMobileView('logs')">
+      <span class="ico">📞</span>
+      <span>Verbali</span>
+    </button>
+  </nav>
+
+  <!-- Slide-Over Drawer for Meeting Minutes / Raw Editor / Mobile Pairing -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+  <aside class="drawer" id="drawer">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <span class="sync-pill" id="drawerBadge">90-log</span>
+      <button class="btn" onclick="closeDrawer()">✕ Chiudi</button>
+    </div>
+    <div class="drawer-content" id="drawerBody"></div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Mode Detection: Local PC Server vs Direct GitHub Cloud Mode (Smartphone)
+    const IS_LOCAL_PC = (location.hostname === "127.0.0.1" || location.hostname === "localhost");
+    let appState = null;
+    let lastSignature = "";
+    let searchQuery = "";
+    let ghCloudFiles = { todoSha: null, logsMeta: {} };
+
+    // 1. Check URL Hash for Magic Pairing Link (#gh_token=...&repo=...)
+    (function checkPairingHash() {
+      if (location.hash && location.hash.includes("gh_token=")) {
+        const params = new URLSearchParams(location.hash.slice(1));
+        const tok = params.get("gh_token");
+        const repo = params.get("repo") || "massimilianopizzi-personale/mp-brain";
+        if (tok) {
+          localStorage.setItem("mp_brain_gh_token", tok);
+          localStorage.setItem("mp_brain_gh_repo", repo);
+          history.replaceState(null, "", location.pathname + location.search);
+        }
+      }
+    })();
+
+    function getCloudCreds() {
+      return {
+        token: localStorage.getItem("mp_brain_gh_token") || "",
+        repo: localStorage.getItem("mp_brain_gh_repo") || "massimilianopizzi-personale/mp-brain"
+      };
+    }
+
+    function saveMobileToken(e) {
+      e.preventDefault();
+      let val = document.getElementById("ghTokenInput").value.trim();
+      let repo = document.getElementById("ghRepoInput").value.trim() || "massimilianopizzi-personale/mp-brain";
+      if (val.includes("gh_token=")) {
+        const hashPart = val.split("#")[1] || val;
+        const p = new URLSearchParams(hashPart);
+        val = p.get("gh_token") || val;
+        repo = p.get("repo") || repo;
+      }
+      localStorage.setItem("mp_brain_gh_token", val);
+      localStorage.setItem("mp_brain_gh_repo", repo);
+      document.getElementById("mobileAuthScreen").style.display = "none";
+      document.getElementById("mainContainer").style.display = "block";
+      fetchState(false);
+    }
+
+    // UTF-8 Base64 helpers for GitHub API
+    function b64ToUtf8(b64) {
+      const binStr = atob(b64.replace(/\s/g, ""));
+      const bytes = Uint8Array.from(binStr, c => c.charCodeAt(0));
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    function utf8ToB64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = "";
+      bytes.forEach(b => bin += String.fromCharCode(b));
+      return btoa(bin);
+    }
+
+    // Client-side Markdown Parser (mirrors server.py for Smartphone Cloud Mode)
+    function parseFrontmatterJS(text) {
+      const meta = {};
+      let body = text;
+      if (text.startsWith("---")) {
+        const parts = text.split("---");
+        if (parts.length >= 3) {
+          const rawYaml = parts[1].trim();
+          body = parts.slice(2).join("---").replace(/^\r?\n/, "");
+          rawYaml.split(/\r?\n/).forEach(line => {
+            const idx = line.indexOf(":");
+            if (idx > -1) {
+              const k = line.slice(0, idx).trim();
+              const v = line.slice(idx + 1).trim();
+              if (v.startsWith("[") && v.endsWith("]")) {
+                meta[k] = v.slice(1, -1).split(",").map(x => x.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean);
+              } else {
+                meta[k] = v.replace(/^['"]|['"]$/g, "");
+              }
+            }
+          });
+        }
+      }
+      return { meta, body };
+    }
+
+    function parseDeadlineJS(text) {
+      let m = text.match(/Scadenza:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i);
+      if (!m) m = text.match(/\b(\d{1,2})\/(\d{1,2})\/(202\d)\b/);
+      if (!m) return null;
+      const d = parseInt(m[1], 10), mo = parseInt(m[2], 10), y = parseInt(m[3], 10);
+      const target = new Date(y, mo - 1, d);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const delta = Math.round((target - today) / 86400000);
+      const disp = `${String(d).padStart(2, "0")}/${String(mo).padStart(2, "0")}/${y}`;
+      let status = "future", label = disp;
+      if (delta < 0) { status = "overdue"; label = `SCADUTO (${Math.abs(delta)}g fa) · ${disp}`; }
+      else if (delta === 0) { status = "today"; label = `OGGI · ${disp}`; }
+      else if (delta === 1) { status = "tomorrow"; label = `DOMANI · ${disp}`; }
+      else if (delta <= 7) { status = "soon"; label = `TRA ${delta} GG · ${disp}`; }
+      return { iso: `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`, display: disp, days: delta, status, label };
+    }
+
+    function parseTodoMarkdownJS(raw) {
+      const { meta } = parseFrontmatterJS(raw);
+      const lines = raw.split(/\r?\n/);
+      let currentH2 = "", currentH3 = "";
+      const immediate = [], agenda = [], completed = [], guidelinesMap = {};
+      let i = 0, n = lines.length;
+      if (raw.startsWith("---")) {
+        i = 1;
+        while (i < n && lines[i].trim() !== "---") i++;
+        i++;
+      }
+      while (i < n) {
+        const line = lines[i];
+        const h2m = line.match(/^##\s+(.+)$/);
+        if (h2m) { currentH2 = h2m[1].trim(); currentH3 = ""; i++; continue; }
+        const h3m = line.match(/^###\s+(.+)$/);
+        if (h3m) {
+          currentH3 = h3m[1].trim();
+          if (currentH2.includes("Allineamenti") || currentH2.toLowerCase().includes("linee guida")) {
+            if (!guidelinesMap[currentH3]) guidelinesMap[currentH3] = [];
+          }
+          i++; continue;
+        }
+        const tm = line.match(/^-\s*\[([ xX])\]\s+(.+)$/);
+        if (tm) {
+          const checked = tm[1].toLowerCase() === "x";
+          const firstLine = tm[2].trim();
+          const taskLineIdx = i;
+          const subLines = [];
+          i++;
+          while (i < n) {
+            const nxt = lines[i];
+            if (/^-\s*\[[ xX]\]\s+/.test(nxt) || /^##\s+/.test(nxt) || /^###\s+/.test(nxt) || nxt.trim() === "---") break;
+            if (nxt.trim()) subLines.push(nxt.trim());
+            i++;
+          }
+          const fullText = firstLine + "\n" + subLines.join("\n");
+          const titleMatch = firstLine.match(/^\*\*(.+?)\*\*(.*)$/);
+          const title = titleMatch ? titleMatch[1].trim() : firstLine;
+          const subtitle = titleMatch ? titleMatch[2].replace(/^[\s—\-:]+/, "").trim() : "";
+          const sources = [...fullText.matchAll(/\[\[([^\]]+)\]\]/g)].map(x => x[1]);
+          const deadline = parseDeadlineJS(fullText);
+          const cleanDetails = subLines.map(sl =>
+            sl.replace(/\*Scadenza:\s*[^*]+\*\s*·?\s*/g, "").replace(/\*Fonte:\*\s*\[\[[^\]]+\]\]/g, "").replace(/^[\s·—\-]+|[\s·—\-]+$/g, "")
+          ).filter(Boolean);
+          const item = { lineIndex: taskLineIdx, checked, title, subtitle, details: cleanDetails.join(" "), sources, deadline, section: currentH2 };
+          const h2Low = currentH2.toLowerCase();
+          if (h2Low.includes("immediate") || h2Low.includes("da fare")) immediate.push(item);
+          else if (h2Low.includes("agenda") || h2Low.includes("scadenze")) agenda.push(item);
+          else if (h2Low.includes("completat")) completed.push(item);
+          else immediate.push(item);
+          continue;
+        }
+        if ((currentH2.includes("Allineamenti") || currentH2.toLowerCase().includes("linee guida")) && currentH3) {
+          if (line.trim() !== "---") guidelinesMap[currentH3].push(line);
+        }
+        i++;
+      }
+      const guidelines = Object.entries(guidelinesMap)
+        .map(([k, v]) => ({ title: k, content: v.join("\n").trim() }))
+        .filter(x => x.content);
+      const nowStr = new Date().toLocaleTimeString("it-IT");
+      return { meta, immediate, agenda, completed, guidelines, raw, updatedAt: nowStr };
+    }
+
+    function formatInlineMarkdown(text) {
+      if (!text) return "";
+      let s = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      s = s.replace(/\\le/g, "≤").replace(/\\rightarrow/g, "→").replace(/\$/g, "");
+      s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
+      s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+      s = s.replace(/\[\[([^\]]+)\]\]/g, (_, slug) =>
+        `<span class="source-chip" onclick="event.stopPropagation(); openLog('${slug}')">📞 ${slug}</span>`
+      );
+      return s;
+    }
+
+    function renderMarkdownBlock(md, logSlug = null) {
+      const lines = md.split(/\r?\n/);
+      let html = "";
+      let inList = false;
+
+      lines.forEach((line, idx) => {
+        if (/^#\s+(.+)/.test(line)) {
+          if (inList) { html += "</ul>"; inList = false; }
+          html += `<h1>${formatInlineMarkdown(RegExp.$1)}</h1>`;
+        } else if (/^##\s+(.+)/.test(line)) {
+          if (inList) { html += "</ul>"; inList = false; }
+          html += `<h2>${formatInlineMarkdown(RegExp.$1)}</h2>`;
+        } else if (/^###\s+(.+)/.test(line)) {
+          if (inList) { html += "</ul>"; inList = false; }
+          html += `<h3 style="margin:14px 0 6px; font-size:14px; color:var(--text-primary);">${formatInlineMarkdown(RegExp.$1)}</h3>`;
+        } else if (/^-\s*\[([ xX])\]\s+(.+)/.test(line)) {
+          if (!inList) { html += "<ul style='list-style:none; padding-left:4px;'>"; inList = true; }
+          const checked = RegExp.$1.toLowerCase() === "x";
+          const content = RegExp.$2;
+          const clickAttr = logSlug ? `onclick="toggleTask(${idx}, '${logSlug}')"` : "";
+          html += `<li style="display:flex; gap:10px; align-items:flex-start; margin:4px 0;">
+            <button class="checkbox-btn ${checked ? 'checked' : ''}" ${clickAttr}>${checked ? '✓' : ''}</button>
+            <span style="${checked ? 'text-decoration:line-through; opacity:0.6;' : ''}">${formatInlineMarkdown(content)}</span>
+          </li>`;
+        } else if (/^\s*[-*]\s+(.+)/.test(line)) {
+          if (!inList) { html += "<ul>"; inList = true; }
+          html += `<li>${formatInlineMarkdown(RegExp.$1)}</li>`;
+        } else if (/^\d+\.\s+(.+)/.test(line)) {
+          if (!inList) { html += "<ul>"; inList = true; }
+          html += `<li>${formatInlineMarkdown(RegExp.$1)}</li>`;
+        } else if (line.trim() === "---") {
+          if (inList) { html += "</ul>"; inList = false; }
+        } else if (line.trim() !== "") {
+          if (inList) { html += "</ul>"; inList = false; }
+          html += `<p style="margin-bottom:8px;">${formatInlineMarkdown(line)}</p>`;
+        }
+      });
+      if (inList) html += "</ul>";
+      return html;
+    }
+
+    function matchesSearch(item) {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      const hay = `${item.title} ${item.subtitle} ${item.details} ${(item.sources || []).join(" ")}`.toLowerCase();
+      return hay.includes(q);
+    }
+
+    function renderTaskCard(item) {
+      const dl = item.deadline;
+      const urgentClass = (!item.checked && dl) ? `urgent-${dl.status}` : "";
+      const completedClass = item.checked ? "completed" : "";
+      const dlBadge = dl ? `<span class="deadline-pill ${dl.status}">⏰ ${dl.label}</span>` : "";
+      const sourcesHtml = (item.sources || []).map(slug =>
+        `<span class="source-chip" onclick="openLog('${slug}')">📞 ${slug}</span>`
+      ).join("");
+
+      return `
+        <div class="task-card ${urgentClass} ${completedClass}">
+          <button class="checkbox-btn ${item.checked ? 'checked' : ''}" onclick="toggleTask(${item.lineIndex})" title="Segna come completata/aperta">
+            ${item.checked ? '✓' : ''}
+          </button>
+          <div class="task-body">
+            <div class="task-top">
+              <div class="task-title">
+                ${formatInlineMarkdown(item.title)}
+                ${item.subtitle ? `<span style="font-weight:400; color:var(--text-secondary);"> — ${formatInlineMarkdown(item.subtitle)}</span>` : ""}
+              </div>
+              <div class="badges">
+                ${dlBadge}
+                <button class="delete-btn" onclick="deleteTask(${item.lineIndex})" title="Elimina promemoria">🗑️</button>
+              </div>
+            </div>
+            ${item.details ? `<div class="task-details">${formatInlineMarkdown(item.details)}</div>` : ""}
+            ${sourcesHtml ? `<div class="task-footer"><div>${sourcesHtml}</div></div>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      if (!appState) return;
+      const { todo, logs } = appState;
+
+      const imm = todo.immediate.filter(matchesSearch);
+      const agd = todo.agenda.filter(matchesSearch);
+      const cmp = todo.completed.filter(matchesSearch);
+
+      document.getElementById("listImmediate").innerHTML = imm.length
+        ? imm.map(renderTaskCard).join("")
+        : `<div style="color:var(--text-muted); font-size:13px; padding:12px;">Nessuna azione immediata trovata.</div>`;
+
+      document.getElementById("listAgenda").innerHTML = agd.length
+        ? agd.map(renderTaskCard).join("")
+        : `<div style="color:var(--text-muted); font-size:13px; padding:12px;">Nessuna scadenza in agenda.</div>`;
+
+      document.getElementById("listCompleted").innerHTML = cmp.length
+        ? cmp.map(renderTaskCard).join("")
+        : `<div style="color:var(--text-muted); font-size:13px; padding:12px;">Nessuna attività completata di recente.</div>`;
+
+      document.getElementById("countImmediate").textContent = imm.filter(x => !x.checked).length;
+      document.getElementById("countAgenda").textContent = agd.filter(x => !x.checked).length;
+      document.getElementById("countCompleted").textContent = cmp.length;
+
+      // KPIs
+      const allOpen = [...todo.immediate, ...todo.agenda].filter(x => !x.checked);
+      const urgentItems = allOpen.filter(x => x.deadline && ["overdue", "today", "tomorrow"].includes(x.deadline.status));
+      document.getElementById("kpiUrgent").textContent = urgentItems.length;
+      document.getElementById("kpiUrgentSub").textContent = urgentItems.length
+        ? urgentItems.map(x => x.title.split("(")[0].trim()).join(" · ")
+        : "Tutto sotto controllo";
+      document.getElementById("kpiOpen").textContent = todo.immediate.filter(x => !x.checked).length;
+      document.getElementById("kpiAgenda").textContent = todo.agenda.filter(x => !x.checked).length;
+      document.getElementById("kpiLogs").textContent = logs.length;
+      document.getElementById("kpiCompletedSub").textContent = `${todo.completed.length} completate di recente`;
+      document.getElementById("syncText").textContent = IS_LOCAL_PC ? `PC ${todo.updatedAt}` : `Mobile ${todo.updatedAt}`;
+
+      if (appState.cloudSync) {
+        const cs = appState.cloudSync;
+        document.getElementById("cloudText").textContent =
+          cs.status === "synced" ? `GitHub ${cs.lastSync}` : (cs.status === "syncing" ? "Syncing..." : "GitHub Cloud");
+      } else if (!IS_LOCAL_PC) {
+        document.getElementById("cloudText").textContent = "GitHub Live";
+      }
+
+      // Guidelines
+      const gHtml = (todo.guidelines || [])
+        .filter(g => !searchQuery || (`${g.title} ${g.content}`).toLowerCase().includes(searchQuery.toLowerCase()))
+        .map(g => `
+          <div class="guideline-card">
+            <div class="guideline-title">📌 ${formatInlineMarkdown(g.title)}</div>
+            <div class="guideline-body">${renderMarkdownBlock(g.content)}</div>
+          </div>
+        `).join("");
+      document.getElementById("viewGuidelines").innerHTML = gHtml || `<div style="color:var(--text-muted); font-size:13px;">Nessuna linea guida trovata.</div>`;
+
+      // Call Logs
+      const lHtml = (logs || [])
+        .filter(l => !searchQuery || (`${l.title} ${l.body}`).toLowerCase().includes(searchQuery.toLowerCase()))
+        .map(l => `
+          <div class="log-card" onclick="openLog('${l.slug}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="log-date">📅 ${l.date}</span>
+              <span class="count-chip">${l.openTasks} azioni aperte · ${l.doneTasks} chiuse</span>
+            </div>
+            <div class="log-title">${formatInlineMarkdown(l.title)}</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              ${(l.tags || []).map(t => `<span class="tag-chip">#${t}</span>`).join("")}
+            </div>
+          </div>
+        `).join("");
+      document.getElementById("viewLogs").innerHTML = lHtml;
+    }
+
+    // Cloud Mode Direct Fetch from GitHub API (for Smartphone)
+    async function fetchStateFromGitHub(silent = false) {
+      const { token, repo } = getCloudCreds();
+      if (!token) {
+        document.getElementById("mobileAuthScreen").style.display = "block";
+        document.getElementById("mainContainer").style.display = "none";
+        return;
+      }
+      document.getElementById("mobileAuthScreen").style.display = "none";
+      document.getElementById("mainContainer").style.display = "block";
+
+      // Load cached state immediately on first load so UI is instant
+      if (!appState) {
+        const cached = localStorage.getItem("mp_brain_offline_cache");
+        if (cached) {
+          try { appState = JSON.parse(cached); renderAll(); } catch (_) {}
+        }
+      }
+
+      try {
+        const headers = {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28"
+        };
+        const todoRes = await fetch(`https://api.github.com/repos/${repo}/contents/10-me/attivita-e-promemoria.md?t=${Date.now()}`, { headers });
+        if (todoRes.status === 401 || todoRes.status === 403) {
+          showToast("⚠️ Token GitHub non valido o scaduto");
+          return;
+        }
+        const todoJson = await todoRes.json();
+        ghCloudFiles.todoSha = todoJson.sha;
+        const todoRaw = b64ToUtf8(todoJson.content);
+        const todoData = parseTodoMarkdownJS(todoRaw);
+
+        // Fetch 90-log directory
+        const logsDirRes = await fetch(`https://api.github.com/repos/${repo}/contents/90-log?t=${Date.now()}`, { headers });
+        const logsList = logsDirRes.ok ? await logsDirRes.json() : [];
+        const mdFiles = (Array.isArray(logsList) ? logsList : []).filter(f => f.name && f.name.endsWith(".md")).sort((a, b) => b.name.localeCompare(a.name));
+
+        const logsData = [];
+        for (const f of mdFiles) {
+          const cachedLog = ghCloudFiles.logsMeta[f.name];
+          if (cachedLog && cachedLog.sha === f.sha) {
+            logsData.push(cachedLog.data);
+          } else {
+            const lr = await fetch(`https://api.github.com/repos/${repo}/contents/90-log/${encodeURIComponent(f.name)}`, { headers });
+            if (lr.ok) {
+              const lj = await lr.json();
+              const rawLog = b64ToUtf8(lj.content);
+              const { meta, body } = parseFrontmatterJS(rawLog);
+              const slug = f.name.replace(/\.md$/, "");
+              const openTasks = (rawLog.match(/^-\s*\[\s\]\s+/gm) || []).length;
+              const doneTasks = (rawLog.match(/^-\s*\[[xX]\]\s+/gm) || []).length;
+              const entry = {
+                slug, filename: f.name, title: meta.title || slug, date: meta.date || slug.slice(0, 10),
+                tags: meta.tags || [], openTasks, doneTasks, body, raw: rawLog, sha: lj.sha
+              };
+              ghCloudFiles.logsMeta[f.name] = { sha: lj.sha, data: entry };
+              logsData.push(entry);
+            }
+          }
+        }
+
+        const sig = `${todoJson.sha}-${logsData.map(x => x.sha).join(",")}`;
+        if (sig !== lastSignature) {
+          lastSignature = sig;
+          appState = { todo: todoData, logs: logsData, signature: sig };
+          localStorage.setItem("mp_brain_offline_cache", JSON.stringify(appState));
+          renderAll();
+          if (silent) showToast("☁️ Sincronizzato da GitHub");
+        }
+      } catch (e) {
+        document.getElementById("syncText").textContent = "Offline (Cache)";
+      }
+    }
+
+    async function saveFileToGitHub(relPath, newContent, currentSha, commitMsg) {
+      const { token, repo } = getCloudCreds();
+      const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      };
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${relPath}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          message: commitMsg,
+          content: utf8ToB64(newContent),
+          sha: currentSha,
+          branch: "main"
+        })
+      });
+      return res.ok;
+    }
+
+    async function fetchState(silent = false) {
+      if (!IS_LOCAL_PC) {
+        return fetchStateFromGitHub(silent);
+      }
+      try {
+        const res = await fetch("/api/state");
+        const data = await res.json();
+        if (data.signature !== lastSignature || (data.cloudSync && appState && data.cloudSync.lastSync !== (appState.cloudSync || {}).lastSync)) {
+          const hadPrev = Boolean(lastSignature) && data.signature !== lastSignature;
+          lastSignature = data.signature;
+          appState = data;
+          renderAll();
+          if (hadPrev && silent) {
+            showToast("🔄 Aggiornato in tempo reale da mp-brain");
+          }
+        }
+      } catch (e) {
+        document.getElementById("syncText").textContent = "Offline";
+      }
+    }
+
+    async function manualSync() {
+      showToast("🔄 Sincronizzazione in corso...");
+      await fetchState(false);
+    }
+
+    async function manualCloudSync() {
+      if (!IS_LOCAL_PC) {
+        await fetchStateFromGitHub(true);
+        return;
+      }
+      showToast("☁️ Sincronizzazione con GitHub in corso...");
+      const res = await fetch("/api/sync-github", { method: "POST" });
+      const data = await res.json();
+      await fetchState(false);
+      if (data.ok) {
+        showToast(`☁️ Sincronizzato con GitHub (${data.lastSync})`);
+      } else {
+        showToast(`⚠️ Errore sync: ${data.error}`);
+      }
+    }
+
+    async function toggleTask(lineIndex, logSlug = null) {
+      if (!IS_LOCAL_PC) {
+        if (!appState) return;
+        const isLog = Boolean(logSlug);
+        const logObj = isLog ? appState.logs.find(x => x.slug === logSlug) : null;
+        const rawText = isLog ? logObj.raw : appState.todo.raw;
+        const lines = rawText.split(/\r?\n/);
+        const m = lines[lineIndex] && lines[lineIndex].match(/^(-\s*\[)([ xX])(\]\s+.*)$/);
+        if (!m) return;
+        const nextChar = m[2].toLowerCase() === "x" ? " " : "x";
+        lines[lineIndex] = `${m[1]}${nextChar}${m[3]}`;
+        const updatedRaw = lines.join("\n");
+        const relPath = isLog ? `90-log/${logObj.filename}` : "10-me/attivita-e-promemoria.md";
+        const sha = isLog ? logObj.sha : ghCloudFiles.todoSha;
+        showToast("☁️ Salvataggio su GitHub...");
+        await saveFileToGitHub(relPath, updatedRaw, sha, `sync(mobile): toggle task in ${relPath}`);
+        await fetchStateFromGitHub(false);
+        if (logSlug) openLog(logSlug);
+        showToast("✅ Salvato su GitHub");
+        return;
+      }
+
+      await fetch("/api/toggle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lineIndex, logSlug })
+      });
+      await fetchState(false);
+      if (logSlug) openLog(logSlug);
+      showToast("✅ Salvato in mp-brain (+ GitHub Sync)");
+    }
+
+    async function deleteTask(lineIndex) {
+      if (!confirm("Rimuovere questo promemoria da attivita-e-promemoria.md?")) return;
+      if (!IS_LOCAL_PC) {
+        const lines = appState.todo.raw.split(/\r?\n/);
+        let endIdx = lineIndex + 1;
+        while (endIdx < lines.length) {
+          const nxt = lines[endIdx];
+          if (/^-\s*\[[ xX]\]\s+/.test(nxt) || /^##\s+/.test(nxt) || /^###\s+/.test(nxt) || nxt.trim() === "---") break;
+          endIdx++;
+        }
+        lines.splice(lineIndex, endIdx - lineIndex);
+        await saveFileToGitHub("10-me/attivita-e-promemoria.md", lines.join("\n"), ghCloudFiles.todoSha, "sync(mobile): rimuovi promemoria");
+        await fetchStateFromGitHub(false);
+        showToast("🗑️ Promemoria rimosso");
+        return;
+      }
+      await fetch("/api/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lineIndex })
+      });
+      await fetchState(false);
+      showToast("🗑️ Promemoria rimosso");
+    }
+
+    async function submitNewTask(e) {
+      e.preventDefault();
+      const title = document.getElementById("newTitle").value.trim();
+      const section = document.getElementById("newSection").value;
+      const deadline = document.getElementById("newDeadline").value;
+      const details = document.getElementById("newDetails").value.trim();
+
+      if (!IS_LOCAL_PC) {
+        const lines = appState.todo.raw.split(/\r?\n/);
+        const pat = section === "agenda" ? /^##\s+.*Agenda/i : /^##\s+.*Da fare/i;
+        let insertIdx = lines.length;
+        for (let i = 0; i < lines.length; i++) {
+          if (pat.test(lines[i])) {
+            let j = i + 1;
+            while (j < lines.length && !/^##\s+/.test(lines[j]) && lines[j].trim() !== "---") j++;
+            while (j > i + 1 && !lines[j - 1].trim()) j--;
+            insertIdx = j;
+            break;
+          }
+        }
+        const block = [`- [ ] **${title}**  `];
+        if (deadline) {
+          const [y, m, d] = deadline.split("-");
+          block.push(`  *Scadenza: ${d}/${m}/${y}*  `);
+        }
+        if (details) block.push(`  ${details}  `);
+        block.push("");
+        lines.splice(insertIdx, 0, ...block);
+        showToast("☁️ Salvataggio su GitHub...");
+        await saveFileToGitHub("10-me/attivita-e-promemoria.md", lines.join("\n"), ghCloudFiles.todoSha, `sync(mobile): aggiungi ${title}`);
+        document.getElementById("newTitle").value = "";
+        document.getElementById("newDeadline").value = "";
+        document.getElementById("newDetails").value = "";
+        document.getElementById("quickAddPanel").classList.remove("open");
+        await fetchStateFromGitHub(false);
+        showToast("✨ Attività salvata su GitHub");
+        return;
+      }
+
+      await fetch("/api/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, section, deadline, details })
+      });
+      document.getElementById("newTitle").value = "";
+      document.getElementById("newDeadline").value = "";
+      document.getElementById("newDetails").value = "";
+      document.getElementById("quickAddPanel").classList.remove("open");
+      await fetchState(false);
+      showToast("✨ Nuova attività aggiunta a mp-brain");
+    }
+
+    function openLog(slug) {
+      if (!appState) return;
+      const log = appState.logs.find(x => x.slug === slug);
+      if (!log) return;
+      document.getElementById("drawerBadge").textContent = `90-log/${log.filename}`;
+      document.getElementById("drawerBody").innerHTML = renderMarkdownBlock(log.body, log.slug);
+      document.getElementById("drawerBackdrop").classList.add("open");
+      document.getElementById("drawer").classList.add("open");
+    }
+
+    function openRawEditor() {
+      if (!appState) return;
+      document.getElementById("drawerBadge").textContent = "10-me/attivita-e-promemoria.md";
+      document.getElementById("drawerBody").innerHTML = `
+        <h2 style="margin-top:0;">Modifica diretta Markdown</h2>
+        <textarea id="rawTextarea" class="input-field" style="width:100%; height:68vh; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.5; margin-bottom:12px;"></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button class="btn btn-primary" onclick="saveRawMarkdown()">💾 Salva</button>
+        </div>
+      `;
+      document.getElementById("rawTextarea").value = appState.todo.raw;
+      document.getElementById("drawerBackdrop").classList.add("open");
+      document.getElementById("drawer").classList.add("open");
+    }
+
+    async function saveRawMarkdown() {
+      const content = document.getElementById("rawTextarea").value;
+      if (!IS_LOCAL_PC) {
+        await saveFileToGitHub("10-me/attivita-e-promemoria.md", content, ghCloudFiles.todoSha, "sync(mobile): modifica markdown");
+        closeDrawer();
+        await fetchStateFromGitHub(false);
+        showToast("💾 Salvato su GitHub");
+        return;
+      }
+      await fetch("/api/save-raw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content })
+      });
+      closeDrawer();
+      await fetchState(false);
+      showToast("💾 File Markdown salvato");
+    }
+
+    async function openMobileModal() {
+      document.getElementById("drawerBadge").textContent = "📱 Configurazione Smartphone (GitHub Cloud)";
+      if (!IS_LOCAL_PC) {
+        const { repo } = getCloudCreds();
+        document.getElementById("drawerBody").innerHTML = `
+          <h2>📱 Stato Connessione Smartphone</h2>
+          <p style="margin-bottom:12px;">Sei connesso direttamente al repository privato <code>${repo}</code> su GitHub.</p>
+          <button class="btn" onclick="localStorage.removeItem('mp_brain_gh_token'); location.reload();">🔒 Disconnetti questo dispositivo</button>
+        `;
+        document.getElementById("drawerBackdrop").classList.add("open");
+        document.getElementById("drawer").classList.add("open");
+        return;
+      }
+
+      document.getElementById("drawerBody").innerHTML = `<p>Caricamento configurazione mobile...</p>`;
+      document.getElementById("drawerBackdrop").classList.add("open");
+      document.getElementById("drawer").classList.add("open");
+
+      const res = await fetch("/api/mobile-info");
+      const info = await res.json();
+
+      document.getElementById("drawerBody").innerHTML = `
+        <h1 style="margin-bottom:6px;">📱 MP-Brain sul tuo Smartphone</h1>
+        <p style="margin-bottom:16px;">
+          La versione mobile funziona <strong>anche a PC spento</strong> sincronizzandosi in tempo reale con il tuo repository privato <code>${info.repo}</code> su GitHub.
+        </p>
+
+        <div class="guideline-card" style="margin-bottom:16px;">
+          <div class="guideline-title">PASSO 1 · Web App Mobile su GitHub Pages</div>
+          <p style="margin-bottom:12px;">
+            Indirizzo della tua Web App Mobile (contiene <strong>solo</strong> il guscio grafico vuoto, zero dati personali):<br/>
+            <a href="${info.pagesUrl}" target="_blank" style="color:var(--accent); font-family:'JetBrains Mono',monospace; font-size:12.5px;">${info.pagesUrl}</a>
+          </p>
+          <button class="btn btn-primary" onclick="publishMobileApp()" id="btnPubMobile">
+            🚀 ${info.pagesActive ? "Aggiorna Web App Mobile su GitHub Pages" : "Attiva Ora Web App Mobile su GitHub Pages"}
+          </button>
+        </div>
+
+        <div class="guideline-card" style="margin-bottom:16px;">
+          <div class="guideline-title">PASSO 2 · Apri e Collega sullo Smartphone (1 Tap)</div>
+          <p style="margin-bottom:12px;">
+            Clicca su <strong>Copia Link Magico</strong> qui sotto e invialo a te stesso (su WhatsApp, Teams o Mail). Quando lo tocchi sullo smartphone, l'app si collega automaticamente al tuo vault privato e cancella la chiave dalla barra degli indirizzi:
+          </p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+            <button class="btn btn-primary" onclick="copyText('${info.magicUrl}', '📋 Link Magico copiato! Inviatelo su WhatsApp/Teams e aprilo dal telefono')">
+              📋 Copia Link Magico di Attivazione
+            </button>
+            <button class="btn" onclick="copyText('${info.token}', '🔑 Codice Token copiato! Puoi incollarlo nella schermata Home di iPhone/Android')">
+              🔑 Copia solo Codice Token (per App già installata in Home)
+            </button>
+          </div>
+          <p style="font-size:12px; color:var(--text-muted);">
+            💡 <strong>Nota per iPhone (Safari):</strong> quando su iPhone fai <em>Condividi → Aggiungi alla schermata Home</em>, Apple crea una memoria isolata per l'icona Home. La prima volta che apri l'icona <code>MP</code> dalla schermata Home, incolla il <strong>Link Magico</strong> o il <strong>Codice Token</strong> nel riquadro che appare e rimarrà memorizzato per sempre.
+          </p>
+        </div>
+      `;
+    }
+
+    async function publishMobileApp() {
+      const btn = document.getElementById("btnPubMobile");
+      if (btn) { btn.disabled = true; btn.textContent = "⏳ Pubblicazione su GitHub Pages in corso..."; }
+      const res = await fetch("/api/publish-mobile", { method: "POST" });
+      const data = await res.json();
+      if (data.ok) {
+        showToast("🚀 Web App Mobile pubblicata su GitHub Pages!");
+        openMobileModal();
+      } else {
+        showToast(`⚠️ Errore: ${data.error}`);
+        if (btn) { btn.disabled = false; btn.textContent = "Riprova pubblicazione"; }
+      }
+    }
+
+    function copyText(txt, toastMsg) {
+      navigator.clipboard.writeText(txt);
+      showToast(toastMsg);
+    }
+
+    function closeDrawer() {
+      document.getElementById("drawerBackdrop").classList.remove("open");
+      document.getElementById("drawer").classList.remove("open");
+    }
+
+    function switchRightTab(tab) {
+      const isG = tab === "guidelines";
+      document.getElementById("viewGuidelines").style.display = isG ? "block" : "none";
+      document.getElementById("viewLogs").style.display = isG ? "none" : "block";
+      document.getElementById("tabBtnGuidelines").classList.toggle("active", isG);
+      document.getElementById("tabBtnLogs").classList.toggle("active", !isG);
+      document.getElementById("rightPanelTitle").textContent = isG
+        ? "🧭 Allineamenti e linee guida da presidiare"
+        : "📞 Storico Verbali Call (90-log)";
+    }
+
+    function switchMobileView(view) {
+      ["Immediate", "Agenda", "Guidelines", "Logs"].forEach(k => {
+        const b = document.getElementById("mTab" + k);
+        if (b) b.classList.toggle("active", k.toLowerCase() === view);
+      });
+      const colLeft = document.getElementById("colLeft");
+      const colRight = document.getElementById("colRight");
+      const pImm = document.getElementById("panelImmediate");
+      const pAgd = document.getElementById("panelAgenda");
+      const pCmp = document.getElementById("panelCompleted");
+
+      if (view === "immediate") {
+        colLeft.style.display = "block";
+        colRight.style.display = "none";
+        pImm.style.display = "block";
+        pAgd.style.display = "none";
+        pCmp.style.display = "none";
+      } else if (view === "agenda") {
+        colLeft.style.display = "block";
+        colRight.style.display = "none";
+        pImm.style.display = "none";
+        pAgd.style.display = "block";
+        pCmp.style.display = "block";
+      } else if (view === "guidelines") {
+        colLeft.style.display = "none";
+        colRight.style.display = "block";
+        switchRightTab("guidelines");
+      } else if (view === "logs") {
+        colLeft.style.display = "none";
+        colRight.style.display = "block";
+        switchRightTab("logs");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function toggleQuickAdd() {
+      const p = document.getElementById("quickAddPanel");
+      p.classList.toggle("open");
+      if (p.classList.contains("open")) {
+        document.getElementById("newTitle").focus();
+      }
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("mp_brain_theme", next);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2800);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const fmt = now.toLocaleDateString("it-IT", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+      document.getElementById("clockDisplay").textContent =
+        fmt.charAt(0).toUpperCase() + fmt.slice(1) + (IS_LOCAL_PC ? " · C:\\git\\github\\personal\\mp-brain" : " · GitHub Cloud Direct");
+    }
+
+    document.getElementById("searchInput").addEventListener("input", e => {
+      searchQuery = e.target.value.trim();
+      renderAll();
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeDrawer();
+      if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        document.getElementById("searchInput").focus();
+      }
+    });
+
+    const savedTheme = localStorage.getItem("mp_brain_theme");
+    if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+
+    // Apply initial mobile layout if on small screen
+    if (window.innerWidth <= 780) {
+      switchMobileView("immediate");
+    }
+
+    updateClock();
+    setInterval(updateClock, 15000);
+    fetchState(false);
+    setInterval(() => fetchState(true), IS_LOCAL_PC ? 2500 : 20000);
+  </script>
+</body>
+</html>
