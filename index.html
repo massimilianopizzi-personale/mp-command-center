@@ -951,6 +951,15 @@
         <input type="text" id="searchInput" placeholder="Filtra attività, persone, BU... (/)" />
       </div>
       <button class="btn btn-primary" onclick="toggleQuickAdd()">＋ Nuova</button>
+      <button class="btn desktop-only" id="btnOutlook" onclick="openOutlookDrawer()" style="border-color:rgba(244,63,94,0.45); background:rgba(244,63,94,0.14); color:#FDA4AF;" title="Sincronizza e processa le mail flaggate di Outlook">
+        🚩 Processa Mail <span class="count-chip" id="outlookBadge" style="display:none; background:#F43F5E; color:#FFF; font-weight:700;">0</span>
+      </button>
+      <button class="btn desktop-only" id="btnTranscripts" onclick="openTranscriptsDrawer()" style="border-color:rgba(139,92,246,0.48); background:rgba(139,92,246,0.15); color:#DDD6FE;" title="Processa le trascrizioni delle call Teams e genera verbale + To-Do">
+        🎙️ Call Teams <span class="count-chip" id="transcriptsBadge" style="display:none; background:#8B5CF6; color:#FFF; font-weight:700;">0</span>
+      </button>
+      <button class="btn desktop-only" id="btnRadarTop" onclick="switchRightTab('radar'); loadCCoERadar(false, false);" style="border-color:rgba(6,182,212,0.48); background:rgba(6,182,212,0.14); color:#A5F3FC;" title="Radar novità e decisioni dai repo condivisi ccoe-brain e ccoe-projects">
+        📡 Radar CCoE
+      </button>
       <button class="btn" id="btnMobileSetup" onclick="openMobileModal()" title="Collega Smartphone">📱 Smartphone</button>
       <button class="btn desktop-only" onclick="openRawEditor()">📝 Markdown</button>
       <button class="btn" onclick="toggleTheme()" id="themeBtn" title="Cambia tema">🌗</button>
@@ -992,29 +1001,29 @@
 
       <div class="kpi-card">
         <div>
-          <div class="kpi-label">Azioni Immediate Aperte</div>
+          <div class="kpi-label">Azioni Mie (Da Fare)</div>
           <div class="kpi-value" id="kpiOpen">0</div>
-          <div class="kpi-sub">Da fare / presidiare</div>
+          <div class="kpi-sub">Operatività & decisioni dirette</div>
         </div>
         <div class="kpi-badge">⚡</div>
       </div>
 
       <div class="kpi-card agenda">
         <div>
-          <div class="kpi-label">In Agenda & Scadenze</div>
-          <div class="kpi-value" id="kpiAgenda">0</div>
-          <div class="kpi-sub">Appuntamenti e milestone</div>
+          <div class="kpi-label">Presidio Team (Deleghe)</div>
+          <div class="kpi-value" id="kpiDelegated">0</div>
+          <div class="kpi-sub" id="kpiDelegatedSub">In attesa dai colleghi CCoE / BU</div>
         </div>
-        <div class="kpi-badge">🗓️</div>
+        <div class="kpi-badge">👁️</div>
       </div>
 
       <div class="kpi-card calls">
         <div>
-          <div class="kpi-label">Verbali Call (90-log)</div>
+          <div class="kpi-label">Agenda & Verbali (90-log)</div>
           <div class="kpi-value" id="kpiLogs">0</div>
-          <div class="kpi-sub" id="kpiCompletedSub">0 completate di recente</div>
+          <div class="kpi-sub" id="kpiCompletedSub">0 scadenze · 0 chiuse</div>
         </div>
-        <div class="kpi-badge">📞</div>
+        <div class="kpi-badge">🗓️</div>
       </div>
     </section>
 
@@ -1022,9 +1031,10 @@
     <section class="quick-add" id="quickAddPanel">
       <form onsubmit="submitNewTask(event)">
         <div class="quick-add-row">
-          <input type="text" id="newTitle" class="input-field" placeholder="Titolo attività o promemoria (es. Chiamare Marco Ferrazzi)..." required />
+          <input type="text" id="newTitle" class="input-field" placeholder="Titolo attività, decisione o delega da presidiare..." required />
           <select id="newSection" class="input-field">
-            <option value="immediate">🔥 Da fare subito</option>
+            <option value="immediate">🔥 Da fare (Mio)</option>
+            <option value="delegated">👁️ Da presidiare (Team)</option>
             <option value="agenda">🗓️ In agenda futura</option>
           </select>
           <input type="date" id="newDeadline" class="input-field" title="Scadenza opzionale" />
@@ -1041,11 +1051,21 @@
         <section class="panel" id="panelImmediate">
           <div class="panel-header">
             <div class="panel-title">
-              🔥 Da fare / Azioni immediate
+              🔥 Da fare / Azioni immediate (Mie)
               <span class="count-chip" id="countImmediate">0</span>
             </div>
           </div>
           <div class="task-list" id="listImmediate"></div>
+        </section>
+
+        <section class="panel" id="panelDelegated">
+          <div class="panel-header">
+            <div class="panel-title">
+              👁️ Da presidiare / In attesa dal Team
+              <span class="count-chip" id="countDelegated">0</span>
+            </div>
+          </div>
+          <div class="task-list" id="listDelegated"></div>
         </section>
 
         <section class="panel" id="panelAgenda">
@@ -1069,18 +1089,23 @@
         </section>
       </div>
 
-      <!-- Right Column: Guidelines & Call Logs -->
+      <!-- Right Column: Strategic Compass, CCoE Radar & Call Logs -->
       <div id="colRight">
         <section class="panel">
           <div class="panel-header">
-            <div class="panel-title" id="rightPanelTitle">🧭 Allineamenti e linee guida da presidiare</div>
+            <div class="panel-title" id="rightPanelTitle">🧭 Bussola Strategica & Decisioni Guida</div>
             <div class="tabs">
-              <button class="tab-btn active" id="tabBtnGuidelines" onclick="switchRightTab('guidelines')">🧭 Linee Guida</button>
-              <button class="tab-btn" id="tabBtnLogs" onclick="switchRightTab('logs')">📞 Verbali Call</button>
+              <button class="tab-btn active" id="tabBtnGuidelines" onclick="switchRightTab('guidelines')">🧭 Bussola</button>
+              <button class="tab-btn desktop-only" id="tabBtnRadar" onclick="switchRightTab('radar'); loadCCoERadar(false, false);">📡 Radar CCoE</button>
+              <button class="tab-btn" id="tabBtnLogs" onclick="switchRightTab('logs')">📞 Verbali</button>
             </div>
           </div>
 
-          <div id="viewGuidelines"></div>
+          <div id="viewGuidelines">
+            <div id="cantiereFilters" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;"></div>
+            <div id="guidelinesList"></div>
+          </div>
+          <div id="viewRadar" style="display:none;"></div>
           <div id="viewLogs" style="display:none;"></div>
         </section>
       </div>
@@ -1110,9 +1135,12 @@
   <!-- Slide-Over Drawer for Meeting Minutes / Raw Editor / Mobile Pairing -->
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
   <aside class="drawer" id="drawer">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:8px; flex-wrap:wrap;">
       <span class="sync-pill" id="drawerBadge">90-log</span>
-      <button class="btn" onclick="closeDrawer()">✕ Chiudi</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div id="drawerExtraActions"></div>
+        <button class="btn" onclick="closeDrawer()">✕ Chiudi</button>
+      </div>
     </div>
     <div class="drawer-content" id="drawerBody"></div>
   </aside>
@@ -1125,6 +1153,8 @@
     let appState = null;
     let lastSignature = "";
     let searchQuery = "";
+    let activeCantiereFilter = "ALL";
+    let radarCache = null;
     let ghCloudFiles = { todoSha: null, logsMeta: {} };
 
     // 1. Check URL Hash for Magic Pairing Link (#gh_token=...&repo=...)
@@ -1227,7 +1257,7 @@
       const { meta } = parseFrontmatterJS(raw);
       const lines = raw.split(/\r?\n/);
       let currentH2 = "", currentH3 = "";
-      const immediate = [], agenda = [], completed = [], guidelinesMap = {};
+      const immediate = [], delegated = [], agenda = [], completed = [], guidelinesMap = {};
       let i = 0, n = lines.length;
       if (raw.startsWith("---")) {
         i = 1;
@@ -1270,7 +1300,8 @@
           ).filter(Boolean);
           const item = { lineIndex: taskLineIdx, checked, title, subtitle, details: cleanDetails.join(" "), sources, deadline, section: currentH2 };
           const h2Low = currentH2.toLowerCase();
-          if (h2Low.includes("immediate") || h2Low.includes("da fare")) immediate.push(item);
+          if (h2Low.includes("presidiare") || h2Low.includes("attesa") || h2Low.includes("deleg")) delegated.push(item);
+          else if (h2Low.includes("immediate") || h2Low.includes("da fare")) immediate.push(item);
           else if (h2Low.includes("agenda") || h2Low.includes("scadenze")) agenda.push(item);
           else if (h2Low.includes("completat")) completed.push(item);
           else immediate.push(item);
@@ -1282,10 +1313,19 @@
         i++;
       }
       const guidelines = Object.entries(guidelinesMap)
-        .map(([k, v]) => ({ title: k, content: v.join("\n").trim() }))
+        .map(([k, v]) => {
+          const content = v.join("\n").trim();
+          const cm = k.match(/^\[([^\]]+)\]\s*(.+)$/);
+          return {
+            title: cm ? cm[2].trim() : k,
+            rawTitle: k,
+            category: cm ? cm[1].trim() : "Generale",
+            content
+          };
+        })
         .filter(x => x.content);
       const nowStr = new Date().toLocaleTimeString("it-IT");
-      return { meta, immediate, agenda, completed, guidelines, raw, updatedAt: nowStr };
+      return { meta, immediate, delegated, agenda, completed, guidelines, raw, updatedAt: nowStr };
     }
 
     function formatInlineMarkdown(text) {
@@ -1386,12 +1426,17 @@
       const { todo, logs } = appState;
 
       const imm = todo.immediate.filter(matchesSearch);
+      const del = (todo.delegated || []).filter(matchesSearch);
       const agd = todo.agenda.filter(matchesSearch);
       const cmp = todo.completed.filter(matchesSearch);
 
       document.getElementById("listImmediate").innerHTML = imm.length
         ? imm.map(renderTaskCard).join("")
         : `<div style="color:var(--text-muted); font-size:13px; padding:12px;">Nessuna azione immediata trovata.</div>`;
+
+      document.getElementById("listDelegated").innerHTML = del.length
+        ? del.map(renderTaskCard).join("")
+        : `<div style="color:var(--text-muted); font-size:13px; padding:12px;">Nessuna delega in attesa dal team.</div>`;
 
       document.getElementById("listAgenda").innerHTML = agd.length
         ? agd.map(renderTaskCard).join("")
@@ -1402,21 +1447,35 @@
         : `<div style="color:var(--text-muted); font-size:13px; padding:12px;">Nessuna attività completata di recente.</div>`;
 
       document.getElementById("countImmediate").textContent = imm.filter(x => !x.checked).length;
+      document.getElementById("countDelegated").textContent = del.filter(x => !x.checked).length;
       document.getElementById("countAgenda").textContent = agd.filter(x => !x.checked).length;
       document.getElementById("countCompleted").textContent = cmp.length;
 
       // KPIs
-      const allOpen = [...todo.immediate, ...todo.agenda].filter(x => !x.checked);
-      const urgentItems = allOpen.filter(x => x.deadline && ["overdue", "today", "tomorrow"].includes(x.deadline.status));
+      const allOpen = [...todo.immediate, ...(todo.delegated || []), ...todo.agenda].filter(x => !x.checked);
+      const urgentItems = allOpen.filter(x => x.deadline && ["overdue", "today", "tomorrow", "soon"].includes(x.deadline.status));
       document.getElementById("kpiUrgent").textContent = urgentItems.length;
       document.getElementById("kpiUrgentSub").textContent = urgentItems.length
         ? urgentItems.map(x => x.title.split("(")[0].trim()).join(" · ")
         : "Tutto sotto controllo";
       document.getElementById("kpiOpen").textContent = todo.immediate.filter(x => !x.checked).length;
-      document.getElementById("kpiAgenda").textContent = todo.agenda.filter(x => !x.checked).length;
+      document.getElementById("kpiDelegated").textContent = (todo.delegated || []).filter(x => !x.checked).length;
       document.getElementById("kpiLogs").textContent = logs.length;
-      document.getElementById("kpiCompletedSub").textContent = `${todo.completed.length} completate di recente`;
+      document.getElementById("kpiCompletedSub").textContent = `${todo.agenda.filter(x => !x.checked).length} in agenda · ${todo.completed.length} chiuse`;
       document.getElementById("syncText").textContent = IS_LOCAL_PC ? `PC ${todo.updatedAt}` : `Mobile ${todo.updatedAt}`;
+
+      const ob = document.getElementById("outlookBadge");
+      if (ob) {
+        const cnt = appState.inboxCount || 0;
+        ob.style.display = cnt > 0 ? "inline-block" : "none";
+        ob.textContent = cnt;
+      }
+      const tb = document.getElementById("transcriptsBadge");
+      if (tb) {
+        const tcnt = appState.transcriptsCount || 0;
+        tb.style.display = tcnt > 0 ? "inline-block" : "none";
+        tb.textContent = tcnt;
+      }
 
       if (appState.cloudSync) {
         const cs = appState.cloudSync;
@@ -1426,16 +1485,30 @@
         document.getElementById("cloudText").textContent = "GitHub Live";
       }
 
-      // Guidelines
+      // Cantiere Filters + Guidelines
+      const categories = ["ALL", ...new Set((todo.guidelines || []).map(g => g.category || "Generale"))];
+      const filtersBar = document.getElementById("cantiereFilters");
+      if (filtersBar) {
+        filtersBar.innerHTML = categories.map(cat => {
+          const isAct = activeCantiereFilter === cat;
+          const label = cat === "ALL" ? "🧭 Tutti i Cantieri" : `📌 ${cat}`;
+          return `<button class="btn ${isAct ? 'btn-primary' : ''}" style="padding:4px 10px; font-size:11.5px;" onclick="setCantiereFilter('${cat}')">${label}</button>`;
+        }).join("");
+      }
+
       const gHtml = (todo.guidelines || [])
-        .filter(g => !searchQuery || (`${g.title} ${g.content}`).toLowerCase().includes(searchQuery.toLowerCase()))
+        .filter(g => activeCantiereFilter === "ALL" || (g.category || "Generale") === activeCantiereFilter)
+        .filter(g => !searchQuery || (`${g.title} ${g.category} ${g.content}`).toLowerCase().includes(searchQuery.toLowerCase()))
         .map(g => `
           <div class="guideline-card">
-            <div class="guideline-title">📌 ${formatInlineMarkdown(g.title)}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+              <div class="guideline-title" style="margin-bottom:0;">📌 ${formatInlineMarkdown(g.title)}</div>
+              ${g.category ? `<span class="tag-chip" style="background:rgba(59,130,246,0.16); color:#93C5FD;">${g.category}</span>` : ""}
+            </div>
             <div class="guideline-body">${renderMarkdownBlock(g.content)}</div>
           </div>
         `).join("");
-      document.getElementById("viewGuidelines").innerHTML = gHtml || `<div style="color:var(--text-muted); font-size:13px;">Nessuna linea guida trovata.</div>`;
+      document.getElementById("guidelinesList").innerHTML = gHtml || `<div style="color:var(--text-muted); font-size:13px;">Nessuna linea guida trovata per questo filtro.</div>`;
 
       // Call Logs
       const lHtml = (logs || [])
@@ -1708,9 +1781,201 @@
       const log = appState.logs.find(x => x.slug === slug);
       if (!log) return;
       document.getElementById("drawerBadge").textContent = `90-log/${log.filename}`;
+      const extra = document.getElementById("drawerExtraActions");
+      if (extra) {
+        extra.innerHTML = IS_LOCAL_PC
+          ? `<button class="btn btn-primary" id="btnPubCCoE" style="padding:5px 11px; font-size:12px;" onclick="publishLogToCCoEBrain('${log.slug}')">📤 Pubblica anche in ccoe-brain</button>`
+          : "";
+      }
       document.getElementById("drawerBody").innerHTML = renderMarkdownBlock(log.body, log.slug);
       document.getElementById("drawerBackdrop").classList.add("open");
       document.getElementById("drawer").classList.add("open");
+    }
+
+    async function publishLogToCCoEBrain(slug) {
+      const btn = document.getElementById("btnPubCCoE");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "⏳ Pubblicazione in ccoe-brain...";
+      }
+      const res = await fetch("/api/publish-ccoe-brain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast(`✅ Verbale pubblicato in ccoe-brain/${data.destFile}`);
+        if (btn) {
+          btn.textContent = `✅ Pubblicato in ccoe-brain (${data.destFile})`;
+        }
+      } else {
+        showToast(`⚠️ Errore: ${data.error}`);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "📤 Riprova pubblicazione";
+        }
+      }
+    }
+
+    function setCantiereFilter(cat) {
+      activeCantiereFilter = cat;
+      renderAll();
+    }
+
+    async function loadCCoERadar(doPull = false, runAi = false) {
+      const container = document.getElementById("viewRadar");
+      if (!container) return;
+      let sec = 0;
+      let timer = null;
+      if (doPull || runAi || !radarCache) {
+        container.innerHTML = `
+          <div class="guideline-card" style="border-color:var(--cyan); background:var(--cyan-bg);">
+            <div class="guideline-title" style="color:var(--cyan);" id="radarProgressTitle">
+              📡 ${runAi ? "Analisi AI dei repository CCoE in corso (0s)..." : (doPull ? "Git Pull su ccoe-brain e ccoe-projects in corso..." : "Scansione modifiche recenti in ccoe-brain e ccoe-projects...")}
+            </div>
+            <p style="font-size:12.5px; color:var(--text-secondary);">
+              Lettura di <code>ccoe-brain</code> (verbali e progetti Tolaria) e <code>ccoe-projects</code> (registri decisioni e cantieri).
+            </p>
+          </div>
+        `;
+        if (runAi) {
+          timer = setInterval(() => {
+            sec++;
+            const el = document.getElementById("radarProgressTitle");
+            if (el) el.textContent = `🤖 Claude sta analizzando i delta di ccoe-brain e ccoe-projects (${sec}s)...`;
+          }, 1000);
+        }
+        const res = await fetch(`/api/ccoe-radar?pull=${doPull ? 1 : 0}&ai=${runAi ? 1 : 0}`);
+        if (timer) clearInterval(timer);
+        radarCache = await res.json();
+        if (doPull) showToast("🔄 Git Pull eseguito su ccoe-brain e ccoe-projects");
+        if (runAi) showToast("✅ Sintesi AI del Radar CCoE completata!");
+      }
+
+      const d = radarCache;
+      if (!d || !d.ok) {
+        container.innerHTML = `<div style="color:var(--rose);">Errore lettura repository CCoE.</div>`;
+        return;
+      }
+
+      let aiHtml = "";
+      if (d.aiDigest) {
+        const ai = d.aiDigest;
+        aiHtml = `
+          <div class="guideline-card" style="border-color:var(--emerald); background:var(--emerald-bg); margin-bottom:14px;">
+            <div class="guideline-title" style="color:var(--emerald);">🤖 Sintesi Strategica AI dai Repo CCoE</div>
+            <p style="font-size:13px; color:var(--text-primary); margin-bottom:10px;">${formatInlineMarkdown(ai.executive_summary || "")}</p>
+            ${(ai.suggested_immediate || []).map(t => {
+              const st = (t.title || "").replace(/'/g, "\\'");
+              const sd = (t.details || "").replace(/'/g, "\\'");
+              return `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:8px 0; border-top:1px solid var(--border);">
+                  <div style="font-size:12.5px;"><strong>🔥 ${formatInlineMarkdown(t.title)}</strong><br/><span style="color:var(--text-secondary);">${formatInlineMarkdown(t.details || "")}</span></div>
+                  <button class="btn btn-primary" style="padding:4px 9px; font-size:11px; flex-shrink:0;" onclick="quickImportRadarTask('${st}', '${sd}', 'immediate', this)">＋ Da Fare</button>
+                </div>
+              `;
+            }).join("")}
+            ${(ai.suggested_delegated || []).map(t => {
+              const st = (t.title || "").replace(/'/g, "\\'");
+              const sd = (t.details || "").replace(/'/g, "\\'");
+              return `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:8px 0; border-top:1px solid var(--border);">
+                  <div style="font-size:12.5px;"><strong>👁️ ${formatInlineMarkdown(t.title)}</strong><br/><span style="color:var(--text-secondary);">${formatInlineMarkdown(t.details || "")}</span></div>
+                  <button class="btn" style="padding:4px 9px; font-size:11px; flex-shrink:0;" onclick="quickImportRadarTask('${st}', '${sd}', 'delegated', this)">＋ Presidia</button>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }
+
+      const mentionsHtml = (d.mentionsForMe || []).slice(0, 8).map(m => {
+        const safeTitle = `Da ${m.sourceTitle}: ${m.excerpt.slice(0, 75)}...`.replace(/'/g, "\\'");
+        const safeDet = m.excerpt.replace(/'/g, "\\'");
+        return `
+          <div class="log-card" onclick="openCCoEFile('${m.repo}', '${m.relPath}')">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span class="log-date">🎯 ${m.repo === 'brain' ? 'ccoe-brain' : 'ccoe-projects'} · ${m.sourceTitle} (${m.date})</span>
+              <div style="display:flex; gap:6px;" onclick="event.stopPropagation();">
+                <button class="btn btn-primary" style="padding:2px 8px; font-size:11px;" onclick="quickImportRadarTask('${safeTitle}', '${safeDet}', 'immediate', this)">＋ Mio To-Do</button>
+                <button class="btn" style="padding:2px 8px; font-size:11px;" onclick="quickImportRadarTask('${safeTitle}', '${safeDet}', 'delegated', this)">👁️ Presidia</button>
+              </div>
+            </div>
+            <div style="font-size:12.5px; color:var(--text-secondary); margin-top:5px;">${formatInlineMarkdown(m.excerpt)}</div>
+          </div>
+        `;
+      }).join("");
+
+      const projectsHtml = (d.recentProjectUpdates || []).slice(0, 8).map(p => `
+        <div class="log-card" onclick="openCCoEFile('projects', '${p.relPath}')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="log-date">🛠️ ${p.project} / ${p.filename}</span>
+            <span class="count-chip">${p.mtimeDisplay}</span>
+          </div>
+          <div style="font-size:12.5px; color:var(--text-secondary); margin-top:5px;">${formatInlineMarkdown(p.preview)}</div>
+        </div>
+      `).join("");
+
+      const brainHtml = (d.recentBrainNotes || []).slice(0, 8).map(b => `
+        <div class="log-card" onclick="openCCoEFile('brain', '${b.relPath}')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="log-date">🧠 ccoe-brain/${b.category} · ${b.date}</span>
+            <span class="count-chip">${b.mtimeDisplay}</span>
+          </div>
+          <div class="log-title">${formatInlineMarkdown(b.title)}</div>
+          <div style="font-size:12px; color:var(--text-muted);">${formatInlineMarkdown(b.preview)}</div>
+        </div>
+      `).join("");
+
+      container.innerHTML = `
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+          <button class="btn btn-primary" onclick="loadCCoERadar(true, true)">🤖 Git Pull + Analizza Novità CCoE con AI</button>
+          <button class="btn" onclick="loadCCoERadar(true, false)">🔄 Git Pull & Aggiorna Lista</button>
+        </div>
+
+        ${aiHtml}
+
+        <h3 style="font-size:13.5px; margin:12px 0 8px; color:#A5F3FC;">🎯 Menzioni & Decisioni che coinvolgono Massimiliano (${(d.mentionsForMe || []).length})</h3>
+        ${mentionsHtml || `<p style="font-size:12.5px; color:var(--text-muted);">Nessuna menzione recente trovata.</p>`}
+
+        <h3 style="font-size:13.5px; margin:16px 0 8px; color:#93C5FD;">🛠️ Ultimi aggiornamenti in <code>ccoe-projects</code></h3>
+        ${projectsHtml}
+
+        <h3 style="font-size:13.5px; margin:16px 0 8px; color:#C4B5FD;">🧠 Ultimi verbali e note in <code>ccoe-brain</code></h3>
+        ${brainHtml}
+      `;
+    }
+
+    async function quickImportRadarTask(title, details, section, btnEl) {
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.textContent = "✓ Aggiunto!";
+      }
+      await fetch("/api/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, section, deadline: "", details })
+      });
+      await fetchState(false);
+      showToast(`✨ Aggiunto a ${section === 'delegated' ? 'Presidio Team' : 'Da Fare'}`);
+    }
+
+    async function openCCoEFile(repo, relPath) {
+      document.getElementById("drawerBadge").textContent = `${repo === 'brain' ? 'ccoe-brain' : 'ccoe-projects'}/${relPath}`;
+      const extra = document.getElementById("drawerExtraActions");
+      if (extra) extra.innerHTML = "";
+      document.getElementById("drawerBody").innerHTML = `<p>Caricamento documento da ${repo}...</p>`;
+      document.getElementById("drawerBackdrop").classList.add("open");
+      document.getElementById("drawer").classList.add("open");
+
+      const res = await fetch(`/api/ccoe-file?repo=${encodeURIComponent(repo)}&path=${encodeURIComponent(relPath)}`);
+      const data = await res.json();
+      if (!data.ok) {
+        document.getElementById("drawerBody").innerHTML = `<p style="color:var(--rose);">${data.error}</p>`;
+        return;
+      }
+      document.getElementById("drawerBody").innerHTML = renderMarkdownBlock(data.body);
     }
 
     function openRawEditor() {
@@ -1824,20 +2089,423 @@
       showToast(toastMsg);
     }
 
+    async function openOutlookDrawer(lastReport = null) {
+      document.getElementById("drawerBadge").textContent = "🚩 Outlook · Mail Flaggate → mp-brain";
+      document.getElementById("drawerBody").innerHTML = `<p>🔍 Controllo coda mail flaggate da Outlook...</p>`;
+      document.getElementById("drawerBackdrop").classList.add("open");
+      document.getElementById("drawer").classList.add("open");
+
+      const res = await fetch("/api/outlook-status");
+      const status = await res.json();
+      const items = status.items || [];
+
+      let reportHtml = "";
+      if (lastReport) {
+        if (lastReport.processedCount === 0) {
+          reportHtml = `
+            <div class="guideline-card" style="border-color:var(--amber); background:var(--amber-bg); margin-bottom:16px;">
+              <div class="guideline-title" style="color:var(--amber); margin-bottom:4px;">ℹ️ Nessuna mail flaggata in coda</div>
+              <p style="font-size:13px;">Metti il flag su Outlook (o trascina qui sotto una mail <code>.eml</code>) e premi il pulsante per processarla.</p>
+            </div>
+          `;
+        } else {
+          reportHtml = `
+            <div class="guideline-card" style="border-color:var(--emerald); background:var(--emerald-bg); margin-bottom:16px;">
+              <div class="guideline-title" style="color:var(--emerald);">✅ Processate ${lastReport.processedCount} mail · Repository aggiornato e Flag rimossi!</div>
+              ${(lastReport.results || []).map(r => `
+                <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+                  <div style="font-weight:700; font-size:13.5px;">📧 ${formatInlineMarkdown(r.subject)} <span style="font-weight:400; color:var(--text-muted);">(${formatInlineMarkdown(r.sender)})</span></div>
+                  <div style="font-size:12.5px; color:var(--text-secondary); margin:4px 0;">${formatInlineMarkdown(r.summary)}</div>
+                  ${(r.addedTasks || []).map(t => `<div style="font-size:12px; color:#93C5FD;">➕ ${formatInlineMarkdown(t)}</div>`).join("")}
+                  ${r.logSlug ? `<div style="margin-top:5px;"><span class="source-chip" onclick="openLog('${r.logSlug}')">📄 Apri nota salvata: ${r.logSlug}</span></div>` : ""}
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }
+      }
+
+      const queueHtml = items.length
+        ? items.map(m => `
+            <div class="log-card" style="cursor:default;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="log-date">🚩 ${m.receivedDateTime} · ${m.sourceType === 'ms_graph' ? 'Microsoft Graph' : 'Ponte Outlook/OneDrive'}</span>
+                <span class="tag-chip">${formatInlineMarkdown(m.sender)}</span>
+              </div>
+              <div class="log-title">${formatInlineMarkdown(m.subject)}</div>
+              <div style="font-size:12px; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                ${formatInlineMarkdown((m.body || "").slice(0, 220))}
+              </div>
+            </div>
+          `).join("")
+        : `<div style="padding:14px; border:1px dashed var(--border); border-radius:var(--radius-md); color:var(--text-muted); font-size:13px; text-align:center; margin-bottom:14px;">
+             Nessuna mail flaggata in attesa in questo momento.
+           </div>`;
+
+      document.getElementById("drawerBody").innerHTML = `
+        <h1 style="margin-bottom:6px;">🚩 Processa Mail Flaggate da Outlook</h1>
+        <p style="margin-bottom:14px;">
+          L'AI analizza le mail flaggate, estrae <strong>To-Do / risposte da dare / scadenze / note informative</strong>, aggiorna <code>attivita-e-promemoria.md</code> e <code>90-log/</code>, sincronizza su GitHub e <strong>rimuove il flag</strong>.
+        </p>
+
+        ${reportHtml}
+
+        <div style="margin-bottom:18px;">
+          <button class="btn btn-primary" id="btnRunOutlookNow" onclick="runOutlookProcess()" style="width:100%; padding:13px; font-size:14px;">
+            ⚡ Avvia Sincronizzazione e Processa Mail Flaggate (${items.length})
+          </button>
+        </div>
+
+        <h2>📥 Mail flaggate pronte in coda (${items.length})</h2>
+        <div style="margin-bottom:18px;">${queueHtml}</div>
+
+        <h2>➕ Aggiungi / Trascina Mail al volo (da Nuovo Outlook)</h2>
+        <div id="emlDropZone"
+             ondragover="event.preventDefault(); this.style.borderColor='var(--accent)';"
+             ondragleave="this.style.borderColor='var(--border-strong)';"
+             ondrop="handleEmlDrop(event)"
+             style="border:2px dashed var(--border-strong); border-radius:var(--radius-md); padding:16px; text-align:center; background:var(--bg-card); margin-bottom:14px; cursor:pointer;"
+             onclick="document.getElementById('emlFileInput').click()">
+          <input type="file" id="emlFileInput" accept=".eml,.json" multiple style="display:none;" onchange="handleEmlFiles(this.files)" />
+          <div style="font-size:13.5px; font-weight:700; color:var(--text-primary);">📂 Trascina qui una o più mail da Outlook (<code>.eml</code>) o clicca per selezionarle</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Oppure salvale nella cartella sincronizzata <code>${status.onedriveInbox}</code></div>
+        </div>
+
+        <details style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; margin-bottom:14px;">
+          <summary style="cursor:pointer; font-weight:700; font-size:13px; color:#93C5FD;">📋 Oppure incolla rapidamente il testo di una mail da processare con AI</summary>
+          <form onsubmit="submitQuickMailPaste(event)" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <input type="text" id="pasteMailSender" class="input-field" placeholder="Mittente (es. Massimo Miserendino / fornitore)..." required />
+            <input type="text" id="pasteMailSubject" class="input-field" placeholder="Oggetto della mail..." required />
+            <textarea id="pasteMailBody" class="input-field" style="height:110px;" placeholder="Incolla qui il testo della mail..." required></textarea>
+            <button type="submit" class="btn btn-primary">🤖 Invia all'AI e Processa Subito</button>
+          </form>
+        </details>
+
+        <details style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px;">
+          <summary style="cursor:pointer; font-weight:700; font-size:13px; color:var(--text-secondary);">⚙️ Come attivare l'aggancio automatico del Flag sul Nuovo Outlook (Power Automate · 1 minuto)</summary>
+          <div style="margin-top:10px; font-size:12.5px; color:var(--text-secondary); line-height:1.6;">
+            <p style="margin-bottom:8px;">
+              Poiché il tenant aziendale SYS-DAT blocca le app terze su Microsoft Graph senza consenso Global Admin, puoi usare il connettore ufficiale Microsoft <strong>Power Automate</strong> già incluso nel tuo account (<code>make.powerautomate.com</code>) collegato alla cartella già pronta <code>${status.onedriveInbox}</code>:
+            </p>
+            <ol style="padding-left:18px;">
+              <li><strong>Flusso 1 (Quando metti il Flag su Outlook → Salva in coda)</strong>: Trigger <em>Office 365 Outlook → "Quando viene contrassegnato un nuovo messaggio e-mail (V3)"</em> → Azione <em>OneDrive for Business → "Crea file"</em> nella cartella <code>/MP-Brain-Inbox/flagged</code>, Nome file: <code>@{triggerOutputs()?['body/id']}.json</code>, Contenuto file:
+                <code>{"id":"@{triggerOutputs()?['body/id']}","subject":"@{triggerOutputs()?['body/subject']}","from":"@{triggerOutputs()?['body/from']}","receivedDateTime":"@{triggerOutputs()?['body/receivedDateTime']}","body":"@{triggerOutputs()?['body/bodyPreview']}"}</code>
+              </li>
+              <li><strong>Flusso 2 (Quando il Cruscotto ha processato la mail → Toglie il Flag su Outlook)</strong>: Trigger <em>OneDrive for Business → "Quando un file viene eliminato"</em> sulla cartella <code>/MP-Brain-Inbox/flagged</code> → Azione <em>Office 365 Outlook → "Contrassegna e-mail (V2)"</em> passando l'ID messaggio (nome file senza <code>.json</code>) e stato contrassegno = <code>notFlagged</code>.</li>
+            </ol>
+          </div>
+        </details>
+      `;
+    }
+
+    async function runOutlookProcess() {
+      const btn = document.getElementById("btnRunOutlookNow");
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = "🤖 L'AI sta leggendo le mail flaggate e aggiornando mp-brain... (attendi ~15-30s)";
+      }
+      showToast("🤖 Analisi AI delle mail flaggate in corso...");
+      try {
+        const res = await fetch("/api/process-outlook", { method: "POST" });
+        const report = await res.json();
+        await fetchState(false);
+        await openOutlookDrawer(report);
+        if (report.processedCount > 0) {
+          showToast(`✅ Processate ${report.processedCount} mail e rimossi i flag!`);
+        } else {
+          showToast("ℹ️ Nessuna mail flaggata in coda");
+        }
+      } catch (e) {
+        showToast("⚠️ Errore durante il processamento delle mail");
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = "⚡ Riprova Sincronizzazione";
+        }
+      }
+    }
+
+    async function handleEmlDrop(e) {
+      e.preventDefault();
+      if (e.dataTransfer && e.dataTransfer.files) {
+        await handleEmlFiles(e.dataTransfer.files);
+      }
+    }
+
+    async function handleEmlFiles(fileList) {
+      if (!fileList || !fileList.length) return;
+      for (const file of fileList) {
+        const buf = await file.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let bin = "";
+        bytes.forEach(b => bin += String.fromCharCode(b));
+        await fetch("/api/upload-mail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, contentBase64: btoa(bin) })
+        });
+      }
+      showToast(`📥 ${fileList.length} mail aggiunte in coda! Avvio analisi AI...`);
+      await fetchState(false);
+      await runOutlookProcess();
+    }
+
+    async function submitQuickMailPaste(e) {
+      e.preventDefault();
+      const sender = document.getElementById("pasteMailSender").value.trim();
+      const subject = document.getElementById("pasteMailSubject").value.trim();
+      const body = document.getElementById("pasteMailBody").value.trim();
+      await fetch("/api/upload-mail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender, subject, body })
+      });
+      await fetchState(false);
+      await runOutlookProcess();
+    }
+
+    async function openTranscriptsDrawer(lastReport = null) {
+      document.getElementById("drawerBadge").textContent = "🎙️ Teams · Trascrizioni Call → Verbale 90-log & To-Do";
+      document.getElementById("drawerBody").innerHTML = `<p>🔍 Scansione trascrizioni Teams pronte da processare (Downloads, OneDrive, C:\\git\\trascrizioni)...</p>`;
+      document.getElementById("drawerBackdrop").classList.add("open");
+      document.getElementById("drawer").classList.add("open");
+
+      const res = await fetch("/api/transcripts-status");
+      const status = await res.json();
+      const items = status.items || [];
+
+      let reportHtml = "";
+      if (lastReport) {
+        if (lastReport.processedCount === 0) {
+          reportHtml = `
+            <div class="guideline-card" style="border-color:var(--amber); background:var(--amber-bg); margin-bottom:16px;">
+              <div class="guideline-title" style="color:var(--amber); margin-bottom:4px;">ℹ️ Nessuna trascrizione in coda</div>
+              <p style="font-size:13px;">Scarica il <code>.docx</code> o <code>.vtt</code> della trascrizione da Teams (finisce in <code>Downloads</code> e viene rilevato da solo!) oppure trascinalo qui sotto.</p>
+            </div>
+          `;
+        } else {
+          reportHtml = `
+            <div class="guideline-card" style="border-color:var(--emerald); background:var(--emerald-bg); margin-bottom:16px;">
+              <div class="guideline-title" style="color:var(--emerald);">✅ Processate ${lastReport.processedCount} Call Teams · Verbali e To-Do aggiornati!</div>
+              ${(lastReport.results || []).map(r => `
+                <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+                  <div style="font-weight:700; font-size:13.5px;">🎙️ ${formatInlineMarkdown(r.title)}</div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">👥 Partecipanti: ${formatInlineMarkdown(r.participants || "")}</div>
+                  <div style="font-size:12.5px; color:var(--text-secondary); margin:4px 0;">${formatInlineMarkdown(r.summary)}</div>
+                  ${(r.addedTasks || []).map(t => `<div style="font-size:12px; color:#93C5FD;">➕ ${formatInlineMarkdown(t)}</div>`).join("")}
+                  ${r.logSlug ? `<div style="margin-top:6px;"><span class="source-chip" onclick="openLog('${r.logSlug}')">📞 Apri Meeting Report: ${r.logSlug}</span></div>` : ""}
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }
+      }
+
+      const queueHtml = items.length
+        ? items.map((t, idx) => {
+            const safeKey = (t.normKey || "").replace(/'/g, "\\'");
+            const cardId = `trCard_${idx}`;
+            return `
+            <div class="log-card" id="${cardId}" style="cursor:default; transition: all 0.25s ease;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span class="log-date">📅 ${t.mtimeDisplay} · ${t.origin}</span>
+                <div style="display:flex; gap:6px; align-items:center;" class="tr-actions">
+                  <span class="count-chip">${t.format} · ${t.turns} interventi</span>
+                  <button class="btn btn-primary" style="padding:4px 10px; font-size:11.5px;" onclick="runTranscriptsProcess('${safeKey}', '${cardId}')">⚡ Processa</button>
+                  <button class="btn" style="padding:4px 9px; font-size:11.5px;" onclick="dismissTranscript('${safeKey}', '${cardId}')" title="Segna come già gestita / ignora">⏭️ Ignora</button>
+                </div>
+              </div>
+              <div class="log-title">${formatInlineMarkdown(t.title)}</div>
+              <div class="tr-status-box" style="display:none; margin:8px 0; padding:10px 12px; border-radius:8px; background:rgba(139,92,246,0.16); border:1px solid var(--violet); color:#DDD6FE; font-size:12.5px; font-weight:600;"></div>
+              <div style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; white-space:pre-line; background:var(--bg-base); padding:8px 10px; border-radius:6px; margin-top:6px;">${formatInlineMarkdown(t.preview)}</div>
+            </div>
+          `}).join("")
+        : `<div style="padding:14px; border:1px dashed var(--border); border-radius:var(--radius-md); color:var(--text-muted); font-size:13px; text-align:center; margin-bottom:14px;">
+             Nessuna nuova trascrizione Teams rilevata in coda. Quando a fine call clicchi <strong>"Scarica trascrizione (.docx)"</strong> su Teams, comparirà qui automaticamente da <code>Downloads</code>!
+           </div>`;
+
+      document.getElementById("drawerBody").innerHTML = `
+        <h1 style="margin-bottom:6px;">🎙️ Meeting Report & Trascrizioni Call Teams</h1>
+        <p style="margin-bottom:14px;">
+          Converte automaticamente le trascrizioni Teams (<code>.docx</code>, <code>.vtt</code>, <code>.txt</code>) con il formato compatto <code>[mm:ss] Nome: testo</code>, genera con l'AI il <strong>Meeting Report completo in <code>90-log/</code></strong> e aggiorna <strong>To-Do, Scadenze e Linee Guida</strong> in <code>attivita-e-promemoria.md</code>.
+        </p>
+
+        ${reportHtml}
+
+        <div style="margin-bottom:18px;">
+          <button class="btn btn-primary" id="btnRunTranscriptsNow" onclick="runTranscriptsProcess()" style="width:100%; padding:13px; font-size:14px;">
+            ⚡ Processa Trascrizioni Teams in Coda (${items.length})
+          </button>
+        </div>
+
+        <h2>📥 Trascrizioni rilevate pronte da processare (${items.length})</h2>
+        <div style="margin-bottom:18px;">${queueHtml}</div>
+
+        <h2>➕ Carica o Trascina una Trascrizione Teams (<code>.docx</code>, <code>.vtt</code>, <code>.txt</code>)</h2>
+        <div id="transcriptDropZone"
+             ondragover="event.preventDefault(); this.style.borderColor='var(--violet)';"
+             ondragleave="this.style.borderColor='var(--border-strong)';"
+             ondrop="handleTranscriptDrop(event)"
+             style="border:2px dashed var(--border-strong); border-radius:var(--radius-md); padding:16px; text-align:center; background:var(--bg-card); margin-bottom:14px; cursor:pointer;"
+             onclick="document.getElementById('transcriptFileInput').click()">
+          <input type="file" id="transcriptFileInput" accept=".docx,.vtt,.txt" multiple style="display:none;" onchange="handleTranscriptFiles(this.files)" />
+          <div style="font-size:13.5px; font-weight:700; color:var(--text-primary);">📂 Trascina qui il file <code>.docx</code> / <code>.vtt</code> / <code>.txt</code> scaricato da Teams</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+            💡 Oppure ti basta cliccare <strong>Scarica (.docx)</strong> dentro Teams: il Cruscotto pesca in automatico le trascrizioni Teams dalla tua cartella <code>Downloads</code>!
+          </div>
+        </div>
+
+        <details style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px;">
+          <summary style="cursor:pointer; font-weight:700; font-size:13px; color:#C4B5FD;">📋 Oppure incolla al volo una trascrizione o gli appunti di una call</summary>
+          <form onsubmit="submitQuickTranscriptPaste(event)" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <input type="text" id="pasteTranscriptTitle" class="input-field" placeholder="Titolo della call (es. Call con Claudio Taverna — Allineamento AI)..." required />
+            <textarea id="pasteTranscriptBody" class="input-field" style="height:120px;" placeholder="Incolla qui la trascrizione o gli appunti..." required></textarea>
+            <button type="submit" class="btn btn-primary">🤖 Genera Verbale 90-log e Aggiorna To-Do</button>
+          </form>
+        </details>
+      `;
+    }
+
+    async function runTranscriptsProcess(onlyNormKey = null, cardId = null) {
+      const btn = document.getElementById("btnRunTranscriptsNow");
+      let sec = 0;
+      const cardEl = cardId ? document.getElementById(cardId) : null;
+      const statusBox = cardEl ? cardEl.querySelector(".tr-status-box") : null;
+      const actionsBox = cardEl ? cardEl.querySelector(".tr-actions") : null;
+
+      if (cardEl) {
+        cardEl.style.borderColor = "var(--violet)";
+        cardEl.style.boxShadow = "0 0 0 2px rgba(139,92,246,0.35)";
+        if (actionsBox) actionsBox.innerHTML = `<span class="sync-pill" style="background:rgba(139,92,246,0.25); color:#DDD6FE; border-color:var(--violet);"><span class="sync-dot"></span> Elaborazione AI...</span>`;
+        if (statusBox) {
+          statusBox.style.display = "block";
+          statusBox.innerHTML = `🤖 <strong>Analisi AI avviata (0s)</strong> · Estrazione decisioni, scrittura verbale in <code>90-log/</code> e aggiornamento To-Do...`;
+        }
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = "🤖 Analisi AI in corso (0s)... Scrittura verbale in 90-log e To-Do...";
+      }
+
+      const timer = setInterval(() => {
+        sec++;
+        const phase = sec < 6
+          ? "Lettura e compattazione interventi Teams..."
+          : (sec < 25 ? "Claude sta sintetizzando decisioni e To-Do..." : "Scrittura verbale Markdown in 90-log e sincronizzazione GitHub...");
+        if (statusBox) {
+          statusBox.innerHTML = `🤖 <strong>Analisi AI in corso (${sec}s)</strong> · ${phase}`;
+        }
+        if (btn) {
+          btn.innerHTML = `🤖 Analisi AI in corso (${sec}s) · ${phase}`;
+        }
+      }, 1000);
+
+      showToast("🎙️ Analisi AI avviata: generazione verbale e To-Do in corso...");
+      try {
+        const res = await fetch("/api/process-transcripts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(onlyNormKey ? { normKey: onlyNormKey } : {})
+        });
+        clearInterval(timer);
+        const report = await res.json();
+        await fetchState(false);
+        await openTranscriptsDrawer(report);
+        document.getElementById("drawer").scrollTo({ top: 0, behavior: "smooth" });
+        if (report.processedCount > 0) {
+          showToast(`✅ Processate ${report.processedCount} call Teams e salvati i verbali in 90-log!`);
+        } else {
+          showToast("ℹ️ Nessuna trascrizione in coda");
+        }
+      } catch (e) {
+        clearInterval(timer);
+        showToast("⚠️ Errore durante l'analisi della trascrizione");
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = "⚡ Riprova Processamento Trascrizioni";
+        }
+      }
+    }
+
+    async function dismissTranscript(normKey, cardId = null) {
+      const cardEl = cardId ? document.getElementById(cardId) : null;
+      if (cardEl) {
+        cardEl.style.opacity = "0.35";
+        cardEl.style.transform = "translateX(24px)";
+        const actionsBox = cardEl.querySelector(".tr-actions");
+        if (actionsBox) actionsBox.innerHTML = `<span class="tag-chip">⏭️ Rimozione in corso...</span>`;
+        setTimeout(() => { cardEl.style.display = "none"; }, 180);
+      }
+      showToast("⏭️ Trascrizione segnata come già gestita");
+      await fetch("/api/dismiss-transcript", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ normKey })
+      });
+      await fetchState(false);
+      await openTranscriptsDrawer();
+    }
+
+    async function handleTranscriptDrop(e) {
+      e.preventDefault();
+      if (e.dataTransfer && e.dataTransfer.files) {
+        await handleTranscriptFiles(e.dataTransfer.files);
+      }
+    }
+
+    async function handleTranscriptFiles(fileList) {
+      if (!fileList || !fileList.length) return;
+      for (const file of fileList) {
+        const buf = await file.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let bin = "";
+        bytes.forEach(b => bin += String.fromCharCode(b));
+        await fetch("/api/upload-transcript", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, contentBase64: btoa(bin) })
+        });
+      }
+      showToast(`📥 ${fileList.length} trascrizioni caricate! Avvio generazione verbale e To-Do...`);
+      await fetchState(false);
+      await runTranscriptsProcess();
+    }
+
+    async function submitQuickTranscriptPaste(e) {
+      e.preventDefault();
+      const title = document.getElementById("pasteTranscriptTitle").value.trim();
+      const body = document.getElementById("pasteTranscriptBody").value.trim();
+      await fetch("/api/upload-transcript", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, body })
+      });
+      await fetchState(false);
+      await runTranscriptsProcess();
+    }
+
     function closeDrawer() {
       document.getElementById("drawerBackdrop").classList.remove("open");
       document.getElementById("drawer").classList.remove("open");
+      const extra = document.getElementById("drawerExtraActions");
+      if (extra) extra.innerHTML = "";
     }
 
     function switchRightTab(tab) {
       const isG = tab === "guidelines";
+      const isR = tab === "radar";
+      const isL = tab === "logs";
       document.getElementById("viewGuidelines").style.display = isG ? "block" : "none";
-      document.getElementById("viewLogs").style.display = isG ? "none" : "block";
+      const vr = document.getElementById("viewRadar");
+      if (vr) vr.style.display = isR ? "block" : "none";
+      document.getElementById("viewLogs").style.display = isL ? "block" : "none";
       document.getElementById("tabBtnGuidelines").classList.toggle("active", isG);
-      document.getElementById("tabBtnLogs").classList.toggle("active", !isG);
+      const tbr = document.getElementById("tabBtnRadar");
+      if (tbr) tbr.classList.toggle("active", isR);
+      document.getElementById("tabBtnLogs").classList.toggle("active", isL);
       document.getElementById("rightPanelTitle").textContent = isG
-        ? "🧭 Allineamenti e linee guida da presidiare"
-        : "📞 Storico Verbali Call (90-log)";
+        ? "🧭 Bussola Strategica & Decisioni Guida"
+        : (isR ? "📡 Radar CCoE (ccoe-brain & ccoe-projects)" : "📞 Storico Verbali Call (90-log)");
     }
 
     function switchMobileView(view) {
